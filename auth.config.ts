@@ -1,23 +1,42 @@
 import type { NextAuthConfig } from 'next-auth';
- 
+
 export const authConfig = {
   pages: {
     signIn: '/login',
   },
-callbacks: {
-  authorized({ auth, request: { nextUrl } }) {
-    const isLoggedIn = !!auth?.user;
 
-    // ✅ Izinkan login page & API
-    if (nextUrl.pathname.startsWith('/login')) return true;
-    if (nextUrl.pathname.startsWith('/api')) return true;
+  callbacks: {
+    /**
+     * authorized() HANYA BOLEH return boolean
+     * JANGAN redirect di sini
+     */
+    authorized({ auth, request: { nextUrl } }) {
+      const isLoggedIn = !!auth?.user;
+      const pathname = nextUrl.pathname;
 
-    // ✅ Proteksi dashboard
-    if (nextUrl.pathname.startsWith('/dashboard')) {
-      return isLoggedIn;
-    }
+      // ✅ Izinkan halaman login
+      if (pathname.startsWith('/login')) {
+        return true;
+      }
 
-    // ✅ Halaman lain bebas
-    return true;
+      // ✅ Izinkan route NextAuth & API
+      if (pathname.startsWith('/api')) {
+        return true;
+      }
+
+      // ✅ Proteksi dashboard
+      if (pathname.startsWith('/dashboard')) {
+        return isLoggedIn;
+      }
+
+      // ✅ Halaman lain bebas
+      return true;
+    },
   },
-},
+
+  /**
+   * Providers diisi di auth.ts
+   * (wajib ada tapi boleh kosong di config)
+   */
+  providers: [],
+} satisfies NextAuthConfig;
